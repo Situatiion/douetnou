@@ -3,220 +3,437 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notre Espace</title>
+    <title>Dashboard Bose Pop</title>
     <style>
+        /* --- 1. CONFIGURATION GLOBALE & POLICE STYLE APPLE --- */
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+
         :root {
-            --bg-color: #f2f2f7;
-            --card-bg: #ffffff;
-            --text-main: #1c1c1e;
-            --text-muted: #8e8e93;
-            --accent: #007aff;
-            --accent-green: #34c759;
-            --accent-orange: #ff9500;
-            --border-color: #e5e5ea;
+            --bg-base: #F5F5F7;
+            --card-bg: rgba(255, 255, 255, 0.65);
+            --card-border: rgba(255, 255, 255, 0.4);
+            --text-main: #1D1D1F;
+            --text-muted: #86868B;
+            
+            /* Vos couleurs Pop */
+            --color-dou: #00F0FF; /* Bleu Turquoise */
+            --color-nou: #FF007A; /* Rose Néon */
+            --color-courses: #70FF00; /* Vert Lime */
+            --gradient-mix: linear-gradient(135deg, #00F0FF 0%, #FF007A 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', 'SF Pro Display', -apple-system, sans-serif;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
+            background-color: var(--bg-base);
             color: var(--text-main);
-            margin: 0;
-            padding: 20px 10px;
+            min-height: 100vh;
+            overflow-x: hidden;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            position: relative;
+            padding: 40px 20px;
         }
 
-        .container {
+        /* --- 2. LE FOND AMBIENT GLOW (Lava lamp subtile) --- */
+        .ambient-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            filter: blur(140px);
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            mix-blend-mode: multiply;
+            animation: float 25s infinite alternate ease-in-out;
+        }
+
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--color-dou);
+            top: -10%;
+            left: -10%;
+        }
+
+        .blob-2 {
+            width: 600px;
+            height: 600px;
+            background: var(--color-nou);
+            bottom: -20%;
+            right: -10%;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 400px;
+            height: 400px;
+            background: var(--color-courses);
+            top: 40%;
+            left: 50%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0px, 0px) scale(1); }
+            50% { transform: translate(60px, -40px) scale(1.1); }
+            100% { transform: translate(-40px, 50px) scale(0.9); }
+        }
+
+        /* --- 3. LE LAYOUT BENTO GRID --- */
+        .dashboard-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 1280px;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 30px;
+            padding-bottom: 100px; /* Espace pour le tiroir du bas */
+        }
+
+        /* Style de base des cartes Glassmorphism */
+        .bento-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--card-border);
+            border-radius: 36px;
+            padding: 35px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* --- 4. BLOC AGENDA (Grande colonne Gauche) --- */
+        .card-agenda {
+            grid-row: span 2;
+        }
+
+        .agenda-timeline {
             display: flex;
             flex-direction: column;
             gap: 20px;
-            box-sizing: border-box;
         }
 
-        header { text-align: center; margin: 10px 0; }
-        header h1 { font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
-        header p { color: var(--text-muted); margin: 5px 0 0 0; font-size: 14px; }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            box-sizing: border-box;
+        .agenda-day {
+            border-left: 2px solid rgba(0, 0, 0, 0.05);
+            padding-left: 20px;
+            margin-left: 10px;
         }
 
-        .card-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
+        .day-title {
+            font-size: 0.85rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .agenda-event {
+            background: white;
+            padding: 18px 22px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.02);
         }
 
-        .badge { background: var(--bg-color); padding: 4px 8px; border-radius: 20px; font-size: 11px; text-transform: none; }
-        .date-highlight { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 15px; text-transform: capitalize; }
-        
-        .counter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: center; }
-        .counter-number { font-size: 32px; font-weight: 700; color: var(--accent); }
-        .counter-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        /* Les indicateurs d'Aura colorés pour l'agenda */
+        .agenda-event::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 6px;
+        }
 
-        .chore-list { display: flex; flex-direction: column; gap: 10px; }
-        .chore-item {
+        .event-dou::before { background: var(--color-dou); }
+        .event-nou::before { background: var(--color-nou); }
+        .event-shared::before { background: var(--gradient-mix); }
+
+        .event-time {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* --- 5. BLOC TÂCHES (Haut Droite) --- */
+        .task-list, .shopping-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .item-row {
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: #f8f8fa;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 15px;
+            gap: 15px;
+            background: white;
+            padding: 16px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        .chore-item input[type="checkbox"] {
-            appearance: none; width: 20px; height: 20px; border: 2px solid #d1d1d6; border-radius: 5px; position: relative; outline: none; background: white;
-        }
-        .chore-item input[type="checkbox"]:checked { background-color: var(--accent-orange); border-color: var(--accent-orange); }
-        .chore-item input[type="checkbox"]:checked::after { content: "✓"; position: absolute; color: white; font-size: 12px; font-weight: bold; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .chore-item input[type="checkbox"]:checked + span { text-decoration: line-through; color: var(--text-muted); }
 
-        button { background-color: var(--accent); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; }
-        button.secondary { background-color: #e5e5ea; color: var(--text-main); }
+        /* Bouton radio custom style Bose Pop */
+        .checkbox-pop {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        /* Assignation des couleurs spécifiques aux cercles */
+        .task-dou .checkbox-pop { border-color: var(--color-dou); }
+        .task-nou .checkbox-pop { border-color: var(--color-nou); }
+        .item-course .checkbox-pop { border-color: var(--color-courses); }
+
+        /* Effet au survol des lignes */
+        .item-row:hover .checkbox-pop {
+            transform: scale(1.1);
+        }
+
+        /* Tâche complétée statique */
+        .item-row.completed {
+            opacity: 0.5;
+        }
+        .item-row.completed .checkbox-pop {
+            background: var(--gradient-mix);
+            border-color: transparent;
+        }
+        .item-row.completed .checkbox-pop::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .item-row.completed span {
+            text-decoration: line-through;
+        }
+
+        /* --- 6. BLOC COURSES (Bas Droite) --- */
+        .course-tag {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        .tag-dou { background: rgba(0, 240, 255, 0.15); color: #00A3AF; }
+        .tag-nou { background: rgba(255, 0, 122, 0.15); color: #C2005D; }
+
+        /* --- 7. LE TIROIR DU BAS (Dock style Bose) --- */
+        .bose-dock {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 12px 30px;
+            border-radius: 100px;
+            display: flex;
+            gap: 25px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .dock-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            color: var(--text-main);
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Effet "Aura" lumineux au survol des boutons du bas */
+        .dock-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            background: var(--text-main);
+            color: white;
+        }
+
+        .btn-add-task:hover { box-shadow: 0 10px 25px rgba(0, 240, 255, 0.4); }
+        .btn-add-event:hover { box-shadow: 0 10px 25px rgba(255, 0, 122, 0.4); }
+        .btn-add-shop:hover { box-shadow: 0 10px 25px rgba(112, 255, 0, 0.4); }
+
+        /* --- RESPONSIVE SI ÉCRAN PETIT --- */
+        @media (max-width: 900px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+            .card-agenda {
+                grid-row: auto;
+            }
+        }
     </style>
-
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>Notre Espace</h1>
-        <p>Ecosystème Connecté v2</p>
-    </header>
-
-    <div class="card">
-        <div class="card-title">Aujourd'hui <span class="badge">Aperçu</span></div>
-        <div class="date-highlight" id="current-date">...</div>
-        <div style="font-size: 15px;">Prêt pour l'intégration Gemini Pro & Google Calendar.</div>
+    <!-- Fond avec les bulles de couleur mouvantes -->
+    <div class="ambient-glow">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
     </div>
 
-    <div class="card">
-        <div class="card-title">Mission Ménage du Jour <span class="badge" style="color:var(--accent-orange)">Synchronisé Cloud</span></div>
-        <div class="chore-list" id="chores-container">
-            <div style="font-size:14px; color:var(--text-muted);">Connexion au serveur Google...</div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-title">Temps passé</div>
-        <div class="counter-grid">
-            <div class="counter-item">
-                <div class="counter-number" id="days-together">0</div>
-                <div class="counter-label">Jours ensemble</div>
-            </div>
-            <div class="counter-item">
-                <div class="counter-number" id="days-trip">0</div>
-                <div class="counter-label">Prochain voyage (J-)</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-title">Décisions en temps réel</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <button onclick="partagerDecision('qui')">Qui commence ?</button>
-            <button class="secondary" onclick="partagerDecision('piece')">Pile ou Face</button>
-        </div>
-        <div id="quick-result" style="margin-top:12px; text-align:center; font-size:15px; font-weight:600; color:var(--accent); min-height:18px;">En attente d'un clic...</div>
-    </div>
-</div>
-
-<script>
-    // --- CONFIGURATION FIREBASE ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyBYjOweD5W6dAYc1RH7XgBD02rLcJEFMbo",
-        authDomain: "mon-app-5483a.firebaseapp.com",
-        projectId: "mon-app-5483a",
-        storageBucket: "mon-app-5483a.appspot.com",
-        messagingSenderId: "849045933421",
-        appId: "1:849045933421:web:140fabc74f9b038f031e64",
-        measurementId: "G-DEK20ZC23Q"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // --- DATES & COMPTEURS ---
-    const dateRencontre = new Date(2024, 4, 15); 
-    const dateProchainVoyage = new Date(2026, 7, 20); // Tu peux changer la date ici !
-    const aujourdhui = new Date();
-    
-    document.getElementById('current-date').textContent = aujourdhui.toLocaleDateString('fr-FR', { weekday: 'long', month: 'long', day: 'numeric' });
-    document.getElementById('days-together').textContent = Math.floor((aujourdhui - dateRencontre) / (1000 * 60 * 60 * 24));
-    document.getElementById('days-trip').textContent = Math.max(0, Math.ceil((dateProchainVoyage - aujourdhui) / (1000 * 60 * 60 * 24)));
-
-    // --- LOGIQUE DES TACHES MENAGERES ---
-    const banqueTaches = [
-        "Passer un coup d'aspirateur", "Lancer une machine de linge", "Vider le lave-vaisselle",
-        "Nettoyer la cuisine", "Sortir la poubelle principale", "Nettoyer le miroir de la SDB",
-        "Arroser les plantes", "Faire la poussière", "Changer les serviettes", "Secouer le tapis"
-    ];
-
-    const cleDateId = aujourdhui.getFullYear() + "-" + (aujourdhui.getMonth()+1) + "-" + aujourdhui.getDate();
-    let indexSelectionnes = [];
-    const poidDate = aujourdhui.getFullYear() + aujourdhui.getMonth() + aujourdhui.getDate();
-    while(indexSelectionnes.length < 3) {
-        let index = (poidDate + indexSelectionnes.length * 7) % banqueTaches.length;
-        if(!indexSelectionnes.includes(index)) indexSelectionnes.push(index);
-    }
-
-    // ÉCOUTE EN TEMPS RÉEL DU MÉNAGE SUR FIRESTORE
-    db.collection("menage").doc(cleDateId).onSnapshot((doc) => {
-        let statutServer = [false, false, false];
-        if (doc.exists) {
-            statutServer = doc.data().statut || [false, false, false];
-        }
+    <!-- Conteneur Principal de la Grille Bento -->
+    <div class="dashboard-container">
         
-        const container = document.getElementById('chores-container');
-        container.innerHTML = '';
-        
-        indexSelectionnes.forEach((idBanque, idxDesign) => {
-            const cochee = statutServer[idxDesign] ? 'checked' : '';
-            container.innerHTML += `
-                <label class="chore-item">
-                    <input type="checkbox" ${cochee} onchange="cocherTacheServer(${idxDesign}, ${JSON.stringify(statutServer)})">
-                    <span>${banqueTaches[idBanque]}</span>
-                </label>
-            `;
+        <!-- 1. BLOC AGENDA (STATIQUE) -->
+        <div class="bento-card card-agenda">
+            <h2>Agenda <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 400;">Aperçu de la semaine</span></h2>
+            
+            <div class="agenda-timeline">
+                <!-- Jour 1 -->
+                <div class="agenda-day">
+                    <div class="day-title">Aujourd'hui</div>
+                    <div class="agenda-event event-shared">
+                        <div>
+                            <strong style="display:block; font-size:1rem;">Resto en amoureux 🍕</strong>
+                            <span class="event-time">12:30 - Paris</span>
+                        </div>
+                    </div>
+                    <div class="agenda-event event-dou">
+                        <div>
+                            <strong style="display:block; font-size:1rem;">Rendez-vous Dentiste (Dou)</strong>
+                            <span class="event-time">16:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Jour 2 -->
+                <div class="agenda-day">
+                    <div class="day-title">Demain</div>
+                    <div class="agenda-event event-nou">
+                        <div>
+                            <strong style="display:block; font-size:1rem;">Réunion importante (Nou)</strong>
+                            <span class="event-time">09:15 - Zoom</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Jour 3 -->
+                <div class="agenda-day">
+                    <div class="day-title">Jeudi 11 Juin</div>
+                    <div class="agenda-event event-shared">
+                        <div>
+                            <strong style="display:block; font-size:1rem;">Dépôt de la voiture au garage</strong>
+                            <span class="event-time">08:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. BLOC TÂCHES (STATIQUE) -->
+        <div class="bento-card">
+            <h2>Tâches </h2>
+            <div class="task-list">
+                <!-- Tâche Dou -->
+                <div class="item-row task-dou">
+                    <div class="checkbox-pop"></div>
+                    <span>Arroser les plantes (Hebdo)</span>
+                </div>
+                <!-- Tâche Nou -->
+                <div class="item-row task-nou">
+                    <div class="checkbox-pop"></div>
+                    <span>Préparer les valises (Exceptionnel)</span>
+                </div>
+                <!-- Tâche Complétée (Mixte) -->
+                <div class="item-row completed">
+                    <div class="checkbox-pop"></div>
+                    <span>Sortir les poubelles</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. BLOC COURSES (STATIQUE) -->
+        <div class="bento-card">
+            <h2>Liste de courses</h2>
+            <div class="shopping-list">
+                <!-- Article créé par Dou -->
+                <div class="item-row item-course">
+                    <div class="checkbox-pop"></div>
+                    <span>Café en grains</span>
+                    <div class="course-tag tag-dou">Pour Dou</div>
+                </div>
+                <!-- Article créé par Nou -->
+                <div class="item-row item-course">
+                    <div class="checkbox-pop"></div>
+                    <span>Avocats & Tomates</span>
+                    <div class="course-tag tag-nou">Pour Nou</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. LE DOCK DE CONTROLE (Style Tiroir Bose) -->
+    <div class="bose-dock">
+        <button class="dock-btn btn-add-task" title="Ajouter une tâche">+</button>
+        <button class="dock-btn btn-add-event" title="Ajouter un événement" style="font-size: 1.2rem;">📅</button>
+        <button class="dock-btn btn-add-shop" title="Ajouter aux courses" style="font-size: 1.2rem;">🛒</button>
+    </div>
+
+    <!-- Petit script pour rendre le "cochage" des tâches interactif dès maintenant -->
+    <script>
+        document.querySelectorAll('.item-row').forEach(row => {
+            row.addEventListener('click', function() {
+                this.classList.toggle('completed');
+            });
         });
-    });
-
-    function cocherTacheServer(idx, statutActuel) {
-        statutActuel[idx] = !statutActuel[idx];
-        db.collection("menage").doc(cleDateId).set({ statut: statutActuel });
-    }
-
-    // --- ÉCOUTE EN TEMPS RÉEL DES DÉCISIONS ---
-    db.collection("actions").doc("decisionRapide").onSnapshot((doc) => {
-        if(doc.exists) {
-            document.getElementById('quick-result').textContent = doc.data().texte;
-        }
-    });
-
-    function partagerDecision(type) {
-        let resultat = "";
-        if(type === 'qui') {
-            resultat = Math.random() < 0.5 ? "👉 C'est TOI !" : "👉 C'est ALEXIANE !";
-        } else {
-            resultat = Math.random() < 0.5 ? "🪙 PILE" : "🪙 FACE";
-        }
-        db.collection("actions").doc("decisionRapide").set({ texte: resultat });
-    }
-</script>
+    </script>
 </body>
 </html>

@@ -61,8 +61,8 @@
         }
 
         .badge { background: var(--bg-color); padding: 4px 8px; border-radius: 20px; font-size: 11px; text-transform: none; }
-
         .date-highlight { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 15px; text-transform: capitalize; }
+        
         .counter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: center; }
         .counter-number { font-size: 32px; font-weight: 700; color: var(--accent); }
         .counter-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
@@ -96,19 +96,20 @@
 <div class="container">
     <header>
         <h1>Notre Espace</h1>
-        <p>Ecosystème Connecté</p>
+        <p>Ecosystème Connecté v2</p>
     </header>
 
     <div class="card">
         <div class="card-title">Aujourd'hui <span class="badge">Aperçu</span></div>
         <div class="date-highlight" id="current-date">...</div>
-        <div style="font-size: 15px;" id="agenda-mock">Planification prête pour l'intégration Google Calendar.</div>
+        <div style="font-size: 15px;">Prêt pour l'intégration Gemini Pro & Google Calendar.</div>
     </div>
 
     <div class="card">
-        <div class="card-title">Mission Ménage du Jour <span class="badge" style="color:var(--accent-orange)">Auto-Généré</span></div>
+        <div class="card-title">Mission Ménage du Jour <span class="badge" style="color:var(--accent-orange)">Synchronisé Cloud</span></div>
         <div class="chore-list" id="chores-container">
-            </div>
+            <div style="font-size:14px; color:var(--text-muted);">Connexion au serveur Google...</div>
+        </div>
     </div>
 
     <div class="card">
@@ -126,17 +127,17 @@
     </div>
 
     <div class="card">
-        <div class="card-title">Outils Rapides</div>
+        <div class="card-title">Décisions en temps réel</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <button onclick="deciderQui()">Qui commence ?</button>
-            <button class="secondary" onclick="pileOuFace()">Pile ou Face</button>
+            <button onclick="partagerDecision('qui')">Qui commence ?</button>
+            <button class="secondary" onclick="partagerDecision('piece')">Pile ou Face</button>
         </div>
-        <div id="quick-result" style="margin-top:12px; text-align:center; font-size:15px; font-weight:600; color:var(--accent); min-height:18px;"></div>
+        <div id="quick-result" style="margin-top:12px; text-align:center; font-size:15px; font-weight:600; color:var(--accent); min-height:18px;">En attente d'un clic...</div>
     </div>
 </div>
 
 <script>
-    // --- CONFIGURATION FIREBASE (TES CLES DE LA PHOTO) ---
+    // --- CONFIGURATION FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyBYjOweD5W6dAYc1RH7XgBD02rLcJEFMbo",
         authDomain: "mon-app-5483a.firebaseapp.com",
@@ -147,73 +148,75 @@
         measurementId: "G-DEK20ZC23Q"
     };
 
-    // Initialisation globale de Firebase
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(); // Notre pont vers Google Firestore !
+    const db = firebase.firestore();
 
-    // --- LOGIQUE DE L'APP ---
+    // --- DATES & COMPTEURS ---
     const dateRencontre = new Date(2024, 4, 15); 
-    const dateProchainVoyage = new Date(2026, 7, 20);
-
+    const dateProchainVoyage = new Date(2026, 7, 20); // Tu peux changer la date ici !
     const aujourdhui = new Date();
-    const options = { weekday: 'long', month: 'long', day: 'numeric' };
-    document.getElementById('current-date').textContent = aujourdhui.toLocaleDateString('fr-FR', options);
+    
+    document.getElementById('current-date').textContent = aujourdhui.toLocaleDateString('fr-FR', { weekday: 'long', month: 'long', day: 'numeric' });
+    document.getElementById('days-together').textContent = Math.floor((aujourdhui - dateRencontre) / (1000 * 60 * 60 * 24));
+    document.getElementById('days-trip').textContent = Math.max(0, Math.ceil((dateProchainVoyage - aujourdhui) / (1000 * 60 * 60 * 24)));
 
-    const diffTogether = aujourdhui - dateRencontre;
-    document.getElementById('days-together').textContent = Math.floor(diffTogether / (1000 * 60 * 60 * 24));
-    const diffVoyage = dateProchainVoyage - aujourdhui;
-    document.getElementById('days-trip').textContent = Math.max(0, Math.ceil(diffVoyage / (1000 * 60 * 60 * 24)));
-
+    // --- LOGIQUE DES TACHES MENAGERES ---
     const banqueTaches = [
-        "Passer un coup d'aspirateur",
-        "Lancer une machine de linge",
-        "Vider le lave-vaisselle",
-        "Nettoyer la cuisine",
-        "Sortir la poubelle principale",
-        "Nettoyer le miroir de la SDB",
-        "Arroser les plantes",
-        "Faire la poussière",
-        "Changer les serviettes",
-        "Secouer le tapis"
+        "Passer un coup d'aspirateur", "Lancer une machine de linge", "Vider le lave-vaisselle",
+        "Nettoyer la cuisine", "Sortir la poubelle principale", "Nettoyer le miroir de la SDB",
+        "Arroser les plantes", "Faire la poussière", "Changer les serviettes", "Secouer le tapis"
     ];
 
-    function genererTachesDuJour() {
-        const poidDate = aujourdhui.getFullYear() + aujourdhui.getMonth() + aujourdhui.getDate();
-        let indexSelectionnes = [];
-        
-        while(indexSelectionnes.length < 3) {
-            let index = (poidDate + indexSelectionnes.length * 7) % banqueTaches.length;
-            if(!indexSelectionnes.includes(index)) indexSelectionnes.push(index);
-        }
+    const cleDateId = aujourdhui.getFullYear() + "-" + (aujourdhui.getMonth()+1) + "-" + aujourdhui.getDate();
+    let indexSelectionnes = [];
+    const poidDate = aujourdhui.getFullYear() + aujourdhui.getMonth() + aujourdhui.getDate();
+    while(indexSelectionnes.length < 3) {
+        let index = (poidDate + indexSelectionnes.length * 7) % banqueTaches.length;
+        if(!indexSelectionnes.includes(index)) indexSelectionnes.push(index);
+    }
 
+    // ÉCOUTE EN TEMPS RÉEL DU MÉNAGE SUR FIRESTORE
+    db.collection("menage").doc(cleDateId).onSnapshot((doc) => {
+        let statutServer = [false, false, false];
+        if (doc.exists) {
+            statutServer = doc.data().statut || [false, false, false];
+        }
+        
         const container = document.getElementById('chores-container');
         container.innerHTML = '';
-
-        // Version locale tempo avant l'activation complète des règles de la base Firestore
-        let statutTaches = JSON.parse(localStorage.getItem('chores_local')) || [false, false, false];
-
+        
         indexSelectionnes.forEach((idBanque, idxDesign) => {
-            const cochee = statutTaches[idxDesign] ? 'checked' : '';
+            const cochee = statutServer[idxDesign] ? 'checked' : '';
             container.innerHTML += `
                 <label class="chore-item">
-                    <input type="checkbox" ${cochee} onchange="cocherTache(${idxDesign})">
+                    <input type="checkbox" ${cochee} onchange="cocherTacheServer(${idxDesign}, ${JSON.stringify(statutServer)})">
                     <span>${banqueTaches[idBanque]}</span>
                 </label>
             `;
         });
+    });
+
+    function cocherTacheServer(idx, statutActuel) {
+        statutActuel[idx] = !statutActuel[idx];
+        db.collection("menage").doc(cleDateId).set({ statut: statutActuel });
     }
 
-    function cocherTache(idx) {
-        let statutTaches = JSON.parse(localStorage.getItem('chores_local')) || [false, false, false];
-        statutTaches[idx] = !statutTaches[idx];
-        localStorage.setItem('chores_local', JSON.stringify(statutTaches));
-        genererTachesDuJour();
+    // --- ÉCOUTE EN TEMPS RÉEL DES DÉCISIONS ---
+    db.collection("actions").doc("decisionRapide").onSnapshot((doc) => {
+        if(doc.exists) {
+            document.getElementById('quick-result').textContent = doc.data().texte;
+        }
+    });
+
+    function partagerDecision(type) {
+        let resultat = "";
+        if(type === 'qui') {
+            resultat = Math.random() < 0.5 ? "👉 C'est TOI !" : "👉 C'est ALEXIANE !";
+        } else {
+            resultat = Math.random() < 0.5 ? "🪙 PILE" : "🪙 FACE";
+        }
+        db.collection("actions").doc("decisionRapide").set({ texte: resultat });
     }
-
-    function deciderQui() { document.getElementById('quick-result').textContent = Math.random() < 0.5 ? "👉 C'est TOI !" : "👉 C'est ALEXIANE !"; }
-    function pileOuFace() { document.getElementById('quick-result').textContent = Math.random() < 0.5 ? "🪙 PILE" : "🪙 FACE"; }
-
-    genererTachesDuJour();
 </script>
 </body>
 </html>
